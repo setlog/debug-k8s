@@ -31,7 +31,7 @@ All-in-all it will look like this picture demonstrates:
 
 ### Creating the Kubernetes cluster
 
-###### Start the cluster
+#### Start the cluster
 
 Before starting we need to adjust the cluster config file to your environment. Unfortunately, `kind` does not use the environment variables and we have to inject them into the config file with `sed`:
 
@@ -95,7 +95,7 @@ Activate the kube-context, so that _kubectl_ can communicate with the newly crea
 
 `kubectl cluster-info --context kind-local-debug-k8s`
 
-###### Install nginx-ingress
+#### Install nginx-ingress
 
 Source: https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
 
@@ -108,7 +108,7 @@ Run the following command for it:
 
 `kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s`
 
-###### Labelling the worker node
+#### Labelling the worker node
 
 We would suggest to label a worker node where the pod is going to be deployed: by default, a pod is deployed on one of several worker nodes you might have in the kind cluster. To make it work the docker image must be populated on all worker nodes in the cluster (it takes time). Otherwise, you can get into a situation, in which the pod is started on a node where the docker image is missing. Let's work with a dedicated node and safe the time.
 
