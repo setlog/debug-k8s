@@ -1,43 +1,40 @@
-### Preface
+# Preface
 
-In this article you are going to learn, how to remotely debug a go service in kubernetes. If you are a developer with an unusual power, your services have no dependencies to other services or all those dependencies are mocked in unit tests, you don't need to debug anything in kubernetes. All other developers need to setup debugging and they want to do it in the kubernetes environment as well. Let us share our exciting and painful experience with you now.
+In this article we want to show you how it´s possible to remote debug a go service in a kubernetes cluster.
 
-### Prerequisites
+## Software Prerequisites
 
-1. Docker Desktop: https://docs.docker.com/get-docker/
+1. Docker Desktop: <https://docs.docker.com/get-docker/> (used version: 19.03.8)
+2. kind (Kubernetes in Docker): <https://kind.sigs.k8s.io.> (used version: v0.7.0) We decided to use kind instead of minikube, since it is a very good tool for testing kubernetes locally.
+3. Kubectl: <https://kubernetes.io/de/docs/tasks/tools/install-kubectl/> (used version: 1.17.2)
+4. Visual Studio Code: <https://code.visualstudio.com/download> (used version: 1.32.3)
 
-    Our version: 19.03.8
-2. Kind (Kubernetes in Docker): https://kind.sigs.k8s.io. We decided to use kind instead of minikube, since it is a very good tool for testing kubernetes locally.
+## Big Picture
 
-    Our version: v0.7.0
-3. Kubectl: https://kubernetes.io/de/docs/tasks/tools/install-kubectl/
+First we will briefly explain how it works:
 
-    Our version: 1.17.2
-4. Visual Studio Code: https://code.visualstudio.com/download
+* you need a docker container with delve (<https://github.com/go-delve/delve>) as main process
+* delve needs access to the path with the project data. This is done by mounting `$GOPATH/src` on the pod which is running in the kubernetes cluster
+* we start the delve container on port 30123 and bind this port to localhost, so that only our local debugger can communicate with delve
+* to debug an API with delve, it´s necessary to set up an ingress network. For this we use port 8090.
 
-    Our version: 1.32.3
+A picture serves to illustrate the communication:
 
-### Big Picture
-
-First, we are going to briefly explain, how it works:
-* you need a docker container with delve started as a main process in it
-* delve (Go debugger) must have an access to the folder with project files. That is done by mounting $GOPATH/src into the pod running in the kubernetes environment
-* we start the delve server on the port 30123 and mount this port to the localhost, so that debugger can communicate with the server through it
-* in order to trigger API functions we want to debug it is necessary to establish an ingress network. We use the port 8090 for that
-    
-All-in-all it will look like this picture demonstrates:
-    
 ![Overview](images/big-picture.png "Big Picture")
 
-### Creating the Kubernetes cluster
+### Creating a Kubernetes cluster
 
-#### Start the cluster
+`kind` unfortunately doesn´t use the environment variable `GOPATH`, so we have to update this in [cluster/config.yaml#L21](config.yaml):
 
-Before starting we need to adjust the cluster config file to your environment. Unfortunately, `kind` does not use the environment variables and we have to inject them into the config file with `sed`:
-
+```sh
 `sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml`
+```
 
-You can also open `cluster/config.yaml` and replace {GOPATH} with the absolute path manually:
+<!-- To be checked! -->
+
+
+
+You can also open [cluster/config.yaml#L21](config.yaml) and replace `{GOPATH}` with the absolute path manually:
 
     extraMounts:
         - hostPath: {GOPATH}/src
@@ -48,7 +45,8 @@ Assuming you already have installed kind (Kubernetes in Docker) on your local ma
 
 The cluster has the name `local-debug-k8s` and is created with the custom configuration (parameter `--config cluster/config.yaml`). Let us take a look at `cluster/config.yaml` and explain it:
 
-```kind: Cluster
+```yml
+kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
@@ -97,7 +95,7 @@ Activate the kube-context, so that _kubectl_ can communicate with the newly crea
 
 #### Install nginx-ingress
 
-Source: https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx
+Source: <https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx>
 
 In order to make both port mounts working (8090 and 30123), it is necessary to deploy the nginx controller as well.
 Run the following command for it:
@@ -120,7 +118,7 @@ So, we label a worker node with _debug=true_:
 
 Our service has only one `/hello` endpoint and writes just a few logs. The interesting part is in the Dockerfile:
 
-```
+```Dockerfile
 FROM golang:1.13-alpine
 
 ENV CGO_ENABLED=0 # compile gcc statically
@@ -212,7 +210,7 @@ Let's go through the deployment.
 
 If you did all steps correctly, your pod should be up and running. Check it with `kubectl get pod`. You should see the output with the pod status _Running_ and two additional services _debug-k8s_ and _service-debug_:
 
-```
+```sh
 NAME                            READY   STATUS    RESTARTS   AGE
 pod/debug-k8s-6d69b65cf-4fl6t   1/1     Running   0          1h
 
