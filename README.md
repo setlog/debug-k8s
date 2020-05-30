@@ -30,20 +30,13 @@ A picture serves to illustrate the communication:
 `sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml`
 ```
 
-<!-- To be checked! -->
+You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually. If  you already installed kind (Kubernetes in Docker) on your local system, you can create the cluster with this command:
 
+```sh
+kind create cluster --config cluster/config.yaml --name=local-debug-k8s
+```
 
-
-You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually:
-
-    extraMounts:
-        - hostPath: {GOPATH}/src
-
-Assuming you already have installed kind (Kubernetes in Docker) on your local machine, the cluster is created by the following command:
-
-`kind create cluster --config cluster/config.yaml --name=local-debug-k8s`
-
-The cluster has the name `local-debug-k8s` and is created with the custom configuration (parameter `--config cluster/config.yaml`). Let us take a look at `cluster/config.yaml` and explain it:
+Ensure that port 8090 and 30123 are not used on your local system. The newly created cluster has the name `local-debug-k8s` and has been created with custom configuration ( `--config cluster/config.yaml`). The following is a brief explanation:
 
 ```yml
 kind: Cluster
@@ -70,41 +63,47 @@ nodes:
       containerPath: /go/src # path to the project folder inside the worker node
 ```
 
-_Hint: make sure that ports 8090 and 30123 are free on your computer before you create the cluster_
+Desired result:
 
-Output:
+```sh
+Creating cluster "local-debug-k8s" ...
+✓ Ensuring node image (kindest/node:v1.17.0) 🖼
+✓ Preparing nodes 📦 📦  
+✓ Writing configuration 📜
+✓ Starting control-plane 🕹️
+✓ Installing CNI 🔌
+✓ Installing StorageClass 💾
+✓ Joining worker nodes 🚜
 
-    Creating cluster "local-debug-k8s" ...
-    ✓ Ensuring node image (kindest/node:v1.17.0) 🖼
-    ✓ Preparing nodes 📦 📦  
-    ✓ Writing configuration 📜 
-    ✓ Starting control-plane 🕹️ 
-    ✓ Installing CNI 🔌 
-    ✓ Installing StorageClass 💾 
-    ✓ Joining worker nodes 🚜 
-    Set kubectl context to "kind-local-debug-k8s"
-    You can now use your cluster with:
+Set kubectl context to "kind-local-debug-k8s"
+You can now use your cluster with:
 
-    kubectl cluster-info --context kind-local-debug-k8s
+kubectl cluster-info --context kind-local-debug-k8s
 
-    Have a nice day! 👋
+Have a nice day! 👋
+```
 
-Activate the kube-context, so that _kubectl_ can communicate with the newly created cluster:
+Activate the kube-context for `kubectl` to communicate with the new cluster:
 
+```sh
 `kubectl cluster-info --context kind-local-debug-k8s`
+```
 
 #### Install nginx-ingress
 
+For both ports (8090 and 30123) to work it´s necessary to deploy a nginx controller:
+
+```sh
+kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+```
+
 Source: <https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx>
-
-In order to make both port mounts working (8090 and 30123), it is necessary to deploy the nginx controller as well.
-Run the following command for it:
-
-`kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml`
 
 ...and wait until nginx-controller runs:
 
-`kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s`
+```sh
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+```
 
 #### Labelling the worker node
 
