@@ -24,7 +24,7 @@ A picture serves to illustrate the communication:
 
 ### Creating a Kubernetes cluster
 
-`kind` unfortunately doesn´t use the environment variable `GOPATH`, so we have to update this in [cluster/config.yaml#L21](config.yaml):
+`kind` unfortunately doesn´t use the environment variable `GOPATH`, so we have to update this in [config.yaml](cluster/config.yaml#L21):
 
 ```sh
 `sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml`
@@ -34,7 +34,7 @@ A picture serves to illustrate the communication:
 
 
 
-You can also open [cluster/config.yaml#L21](config.yaml) and replace `{GOPATH}` with the absolute path manually:
+You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually:
 
     extraMounts:
         - hostPath: {GOPATH}/src
