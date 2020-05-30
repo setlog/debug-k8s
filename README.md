@@ -1,17 +1,23 @@
 # Preface
 
-In this article we want to show you how it´s possible to remote debug a go service in a kubernetes cluster.
+In a perfect world every written service will work smooth, your test coverage is on top and there are no bugs in your API. But we all know, that we can´t achieve this world, sadly. It´s not unusual that there´s a bug in an API and you have to debug this problem in a production environment. We have faced this problem with our go services in our kubernetes cluster and we want to show you how it´s possible to remote debug a go service in a kubernetes cluster.
 
 ## Software Prerequisites
 
-1. Docker Desktop: <https://docs.docker.com/get-docker/> (used version: 19.03.8)
-2. kind (Kubernetes in Docker): <https://kind.sigs.k8s.io.> (used version: v0.7.0) We decided to use kind instead of minikube, since it is a very good tool for testing kubernetes locally.
-3. Kubectl: <https://kubernetes.io/de/docs/tasks/tools/install-kubectl/> (used version: 1.17.2)
-4. Visual Studio Code: <https://code.visualstudio.com/download> (used version: 1.32.3)
+For this scenario we need some software:
+
+* Docker Desktop: <https://docs.docker.com/get-docker/> (used version: 19.03.8)
+* kind (Kubernetes in Docker): <https://kind.sigs.k8s.io.> (used version: v0.7.0)
+* Kubectl: <https://kubernetes.io/de/docs/tasks/tools/install-kubectl/> (used version: 1.17.2)
+* Visual Studio Code: <https://code.visualstudio.com/download> (used version: 1.32.3)
+
+We decided to use `kind` instead of `minikube`, since it´s a very good tool for testing kubernetes locally and we can use our docker images without a docker registry.
 
 ## Big Picture
 
 First we will briefly explain how it works:
+
+1. We create a new kubernetes cluster `local-debug-k8s` on our local system
 
 * you need a docker container with delve (<https://github.com/go-delve/delve>) as main process
 * delve needs access to the path with the project data. This is done by mounting `$GOPATH/src` on the pod which is running in the kubernetes cluster
