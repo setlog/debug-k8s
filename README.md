@@ -239,7 +239,7 @@ _Hint: always wait until this log message is shown for this pod before you start
 
 Now we need a debug configuration in Visual Code. This can be done in `.vscode/launch.json`:
 
-```
+```json
 {
     "version": "0.2.0",
     "configurations": [
@@ -248,14 +248,16 @@ Now we need a debug configuration in Visual Code. This can be done in `.vscode/l
             "type": "go",
             "request": "attach",
             "mode":"remote",
-            "remotePath": "/go/src/github.com/setlog/debug-k8s", // path to the project path inside the pod
-            "port": 30123, // local port to send the debug commands to
-            "host": "127.0.0.1", // host to send the debug commands to
+            "remotePath": "/go/src/github.com/setlog/debug-k8s",
+            "port": 30123,
+            "host": "127.0.0.1",
             "showLog": true
         }
     ]
 }
 ```
+
+Where `remotePath` is the path to the project path inside the pod, `port` the local port to send the debug commands to, and `host` the host to send the debug commands to.
 
 You find the new configuration in Visual Code here:
 
