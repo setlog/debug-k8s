@@ -1,6 +1,6 @@
 # Preface
 
-In a perfect world every written service will work smooth, your test coverage is on top and there are no bugs in your API. But we all know, that we can´t achieve this world, sadly. It´s not unusual that there´s a bug in an API and you have to debug this problem in a production environment. We have faced this problem with our go services in our kubernetes cluster and we want to show you how it´s possible to remote debug a go service in a kubernetes cluster.
+In a perfect world every written service will work smooth, your test coverage is on top and there are no bugs in your API. But we all know, that we can't achieve this world, sadly. It's not unusual that there's a bug in an API and you have to debug this problem in a production environment. We have faced this problem with our go services in our kubernetes cluster and we want to show you how it's possible to remote debug a go service in a kubernetes cluster.
 
 ## Software Prerequisites
 
@@ -11,7 +11,7 @@ For this scenario we need some software:
 * Kubectl: <https://kubernetes.io/de/docs/tasks/tools/install-kubectl/> (used version: 1.17.2)
 * Visual Studio Code: <https://code.visualstudio.com/download> (used version: 1.32.3)
 
-We decided to use `kind` instead of `minikube`, since it´s a very good tool for testing kubernetes locally and we can use our docker images without a docker registry.
+We decided to use `kind` instead of `minikube`, since it's a very good tool for testing kubernetes locally and we can use our docker images without a docker registry.
 
 ## Big Picture
 
@@ -22,7 +22,7 @@ First we will briefly explain how it works:
 * you need a docker container with delve (<https://github.com/go-delve/delve>) as main process
 * delve needs access to the path with the project data. This is done by mounting `$GOPATH/src` on the pod which is running in the kubernetes cluster
 * we start the delve container on port 30123 and bind this port to localhost, so that only our local debugger can communicate with delve
-* to debug an API with delve, it´s necessary to set up an ingress network. For this we use port 8090.
+* to debug an API with delve, it's necessary to set up an ingress network. For this we use port 8090.
 
 A picture serves to illustrate the communication:
 
@@ -30,7 +30,7 @@ A picture serves to illustrate the communication:
 
 ### Creating a Kubernetes cluster
 
-`kind` unfortunately doesn´t use the environment variable `GOPATH`, so we have to update this in [config.yaml](cluster/config.yaml#L21):
+`kind` unfortunately doesn't use the environment variable `GOPATH`, so we have to update this in [config.yaml](cluster/config.yaml#L21):
 
 ```sh
 `sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml`
@@ -97,7 +97,7 @@ Activate the kube-context for `kubectl` to communicate with the new cluster:
 
 #### Install nginx-ingress
 
-For both ports (8090 and 30123) to work it´s necessary to deploy a nginx controller:
+For both ports (8090 and 30123) to work it's necessary to deploy a nginx controller:
 
 ```sh
 kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
