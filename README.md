@@ -31,7 +31,7 @@ A picture serves to illustrate the communication:
 `kind` unfortunately doesn't use the environment variable `GOPATH`, so we have to update this in [config.yaml](cluster/config.yaml#L21):
 
 ```sh
-`sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml`
+sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml
 ```
 
 You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually. If  you already installed kind (Kubernetes in Docker) on your local system, you can create the cluster with this command:
@@ -115,7 +115,9 @@ We suggest labelling a worker node where the pod is going to be deployed. By def
 
 So, we label a worker node with _debug=true_:
 
-`kubectl label nodes local-debug-k8s-worker debug=true`
+```sh
+kubectl label nodes local-debug-k8s-worker debug=true
+```
 
 ### Creating a docker image
 
@@ -144,21 +146,29 @@ ENTRYPOINT ["/go/bin/dlv", "debug", ".", "--listen=:30123", "--accept-multiclien
 
 First, build the docker image locally:
 
-`docker build -t setlog/debug-k8s .`
+```sh
+docker build -t setlog/debug-k8s .
+```
 
 Load the docker image into the node _local-debug-k8s-worker_:
 
-`kind load docker-image setlog/debug-k8s:latest --name=local-debug-k8s --nodes=local-debug-k8s-worker`
+```sh
+kind load docker-image setlog/debug-k8s:latest --name=local-debug-k8s --nodes=local-debug-k8s-worker
+```
 
 This message will be shown, and it is just saying that the image was not there:
 
+```
     Image: "setlog/debug-k8s:latest" with ID "sha256:944baa03d49698b9ca1f22e1ce87b801a20ce5aa52ccfc648a6c82cf8708a783" not present on node "local-debug-k8s-worker"
+```
 
 ### Starting the delve server in the cluster
 
 Now we want to create a persistent volume and its claim in order to mount the project path into the worker node:
 
-`kubectl create -f cluster/persistent-volume.yaml`
+```sh
+kubectl create -f cluster/persistent-volume.yaml
+```
 
 The interesting part here is:
 
@@ -173,24 +183,31 @@ Let's take a look at the full chain of mounting the local project path into the 
 
 Check, if your persistent volume claim has been successfully created (STATUS must be Bound):
 
-`kubectl get pvc`
+```sh
+kubectl get pvc
 
     NAME     STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
     go-pvc   Bound    go-pv    256Mi      RWO            hostpath       51s
+```
 
 You are ready to start the service in debug mode:
 
-`kubectl create -f cluster/deploy-service.yaml`
+```sh
+kubectl create -f cluster/deploy-service.yaml
+```
 
 Let's go through the deployment.
 
 * Image name is what we loaded into the kind cluster with the command `kind load image...`. _imagePullPolicy_ must be set to _IfNotPresent_, because it is already loaded, we don't want Kubernetes to try loading it again.
 
-          image: setlog/debug-k8s:latest
-          imagePullPolicy: IfNotPresent
+```yaml
+      image: setlog/debug-k8s:latest
+      imagePullPolicy: IfNotPresent
+```
 
 * We use the persistent volume claim to mount the project path into the pod and make `/go/src` to be linked with `${GOPATH}/src` on your computer:
 
+```yaml
       containers:
         - name: debug-k8s
           ...
@@ -201,11 +218,14 @@ Let's go through the deployment.
         - name: go-volume
           persistentVolumeClaim:
             claimName: go-pvc
+````
 
 * As there might be several workers in your cluster, we deploy the pod on the one, that is labelled with _debug=true_. The docker image _setlog/debug-k8s_ has been loaded earlier in it already.
 
+```yaml
       nodeSelector:
         debug: "true"
+```
 
 * Service _service-debug_ has the type _NodePort_ and is mounted into the worker node. This port 30123 is equal to the parameter _--listen=:30123_ in the Dockerfile, which makes it possible to send debug commands to the delve server.
 
@@ -213,7 +233,7 @@ Let's go through the deployment.
 
 If you did all steps correctly, your pod should be up and running. Check it with `kubectl get pod`. You should see the output with the pod status _Running_ and two additional services _debug-k8s_ and _service-debug_:
 
-```sh
+```
 NAME                            READY   STATUS    RESTARTS   AGE
 pod/debug-k8s-6d69b65cf-4fl6t   1/1     Running   0          1h
 
@@ -230,8 +250,9 @@ Usually it takes a couple of seconds to start the debugging process with delve. 
 Also, you can output logs of the pod by performing `kubectl logs $PODNAME` in order to make sure the delve API server is listening at 30123.
 
 Output:
-
+```
         API server listening at: [::]:30123
+```
 
 _Hint: always wait until this log message is shown for this pod before you start the debugging process. Otherwise, the delve server is not up yet and cannot answer to the debugger._
 
@@ -269,11 +290,15 @@ After starting the debug process there is a new log created by the go service:
 
 We are ready to debug, but we have to trigger the API functions through the ingress service. Deploy it with kubectl:
 
-`kubectl create -f cluster/ingress.yaml`
+```sh
+kubectl create -f cluster/ingress.yaml
+```
 
 And try accessing it now:
 
-`curl http://localhost:8090/hello`
+```sh
+curl http://localhost:8090/hello
+```
 
 Which should trigger the debugger:
 
@@ -285,4 +310,6 @@ Happy debugging!
 
 If you don't need your kind cluster anymore, it can be removed with following command:
 
-`kind delete cluster --name=local-debug-k8s`
+```sh
+kind delete cluster --name=local-debug-k8s
+```
