@@ -6,10 +6,10 @@ In a perfect world every written service will work smooth, your test coverage is
 
 For this scenario we need some software:
 
-* Docker Desktop: <https://docs.docker.com/get-docker/> (used version: 19.03.8)
-* kind (Kubernetes in Docker): <https://kind.sigs.k8s.io.> (used version: v0.7.0)
-* Kubectl: <https://kubernetes.io/de/docs/tasks/tools/install-kubectl/> (used version: 1.17.2)
-* Visual Studio Code: <https://code.visualstudio.com/download> (used version: 1.32.3)
+* [Docker Desktop](https://docs.docker.com/get-docker) (used version: 19.03.8)
+* [kind (Kubernetes in Docker)](https://kind.sigs.k8s.io) (used version: v0.7.0)
+* [Kubectl](https://kubernetes.io/de/docs/tasks/tools/install-kubectl) (used version: 1.17.2)
+* [Visual Studio Code](https://code.visualstudio.com/download) (used version: 1.32.3)
 
 We decided to use `kind` instead of `minikube`, since it's a very good tool for testing kubernetes locally and we can use our docker images without a docker registry.
 
@@ -19,7 +19,7 @@ First we will briefly explain how it works:
 
 1. We create a new kubernetes cluster `local-debug-k8s` on our local system
 
-* you need a docker container with delve (<https://github.com/go-delve/delve>) as main process
+* you need a docker container with [delve](https://github.com/go-delve/delve) (the go debugger) as the main process
 * delve needs access to the path with the project data. This is done by mounting `$GOPATH/src` on the pod which is running in the kubernetes cluster
 * we start the delve container on port 30123 and bind this port to localhost, so that only our local debugger can communicate with delve
 * to debug an API with delve, it's necessary to set up an ingress network. For this we use port 8090.
@@ -103,7 +103,7 @@ For both ports (8090 and 30123) to work it's necessary to deploy a nginx control
 kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 ```
 
-Source: <https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx>
+Source: [kind documentation](https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx>)
 
 ...and wait until nginx-controller runs:
 
