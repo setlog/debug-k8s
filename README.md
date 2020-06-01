@@ -126,15 +126,18 @@ Our service has only one `/hello` endpoint and writes just a few logs. The inter
 ```Dockerfile
 FROM golang:1.13-alpine
 
-ENV CGO_ENABLED=0 # compile gcc statically
+# compile gcc statically
+ENV CGO_ENABLED=0
 ENV GOROOT=/usr/local/go
-ENV GOPATH=${HOME}/go # this path will be mounted in deploy-service.yaml later
+# this path will be mounted in deploy-service.yaml later
+ENV GOPATH=${HOME}/go
 ENV PATH=$PATH:${GOROOT}/bin
 
 EXPOSE 30123 # for delve
 EXPOSE 8090 # for API calls
 
-WORKDIR /go/src/github.com/setlog/debug-k8s # ATTENTION: you want to check, if the path to the project folder is the right one here
+# ATTENTION: you want to check, if the path to the project folder is the right one here
+WORKDIR /go/src/github.com/setlog/debug-k8s
 
 # Install delve, our version is 1.4.1
 RUN apk update && apk add git && \
