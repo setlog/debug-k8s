@@ -122,7 +122,7 @@ kubectl label nodes local-debug-k8s-worker debug=true
 
 ### Creating a docker image
 
-Our service has only one `/hello` endpoint and writes just a few logs. The interesting part is in the Dockerfile:
+Our service has only one endpoint `/hello` and writes just a few logs. Let's checkout the Dockerfile for delve:
 
 ```Dockerfile
 FROM golang:1.13-alpine
@@ -130,39 +130,40 @@ FROM golang:1.13-alpine
 # compile gcc statically
 ENV CGO_ENABLED=0
 ENV GOROOT=/usr/local/go
-# this path will be mounted in deploy-service.yaml later
+# this path will be mounted in deploy-service.yaml
 ENV GOPATH=${HOME}/go
 ENV PATH=$PATH:${GOROOT}/bin
 
-EXPOSE 30123 # for delve
-EXPOSE 8090 # for API calls
+# Install git and get the latest version of delve via go
+RUN apk update && apk add --no-cache \
+    git && \
+    go get github.com/go-delve/delve/cmd/dlv
 
 # ATTENTION: you want to check, if the path to the project folder is the right one here
 WORKDIR /go/src/github.com/setlog/debug-k8s
 
-# Install delve, our version is 1.4.1
-RUN apk update && apk add git && \
-    go get github.com/go-delve/delve/cmd/dlv
+# 30123 for delve and 8090 for API calls
+EXPOSE 30123 8090
 
-# let start delve at the entrypoint
+# let's start delve as the entrypoint
 ENTRYPOINT ["/go/bin/dlv", "debug", ".", "--listen=:30123", "--accept-multiclient", "--headless=true", "--api-version=2"]
 ```
 
-First, build the docker image locally:
+So, let's build build our docker image from our [Dockerfile](Dockerfile):
 
 ```sh
-docker build -t setlog/debug-k8s .
+docker build -t setlog/debug-k8s ./Dockerfile
 ```
 
-Load the docker image into the node _local-debug-k8s-worker_:
+After the build is done, we load the image `setlog/debug-k8s:latest` on the node _local-debug-k8s-worker_:
 
 ```sh
 kind load docker-image setlog/debug-k8s:latest --name=local-debug-k8s --nodes=local-debug-k8s-worker
 ```
 
-This message will be shown, and it is just saying that the image was not there:
+A message appears indicating that the docker image did not exist before:
 
-```
+```sh
     Image: "setlog/debug-k8s:latest" with ID "sha256:944baa03d49698b9ca1f22e1ce87b801a20ce5aa52ccfc648a6c82cf8708a783" not present on node "local-debug-k8s-worker"
 ```
 
