@@ -34,7 +34,7 @@ A picture serves to illustrate the communication:
 sed -i.bak 's|'{GOPATH}'|'${GOPATH}'|g' cluster/config.yaml
 ```
 
-You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually. If  you already installed kind (Kubernetes in Docker) on your local system, you can create the cluster with this command:
+You can also open [config.yaml](cluster/config.yaml#L21) and replace `{GOPATH}` with the absolute path manually. If you already installed kind (Kubernetes in Docker) on your local system, you can create the cluster with this command:
 
 ```sh
 kind create cluster --config cluster/config.yaml --name=local-debug-k8s
@@ -47,9 +47,9 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
-  kubeadmConfigPatches:
+  kubeadmConfigPatches: # necessary, since we are going to install an ingress network in the cluster
   - |
-    kind: InitConfiguration # necessary, since we are going to install an ingress network in the cluster
+    kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
