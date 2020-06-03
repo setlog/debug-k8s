@@ -109,11 +109,12 @@ to observe the current status the following command can be executed:
 kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
 ```
 
-#### Labelling the worker node
+#### Labelling the node
 
-We suggest labelling a worker node where the pod is going to be deployed. By default, a pod is deployed on one of several worker nodes you might have in the kind cluster. To make it work, the docker image must be populated on all worker nodes in the cluster (which takes time). Otherwise, you can get into a situation, in which the pod has started on a node where the docker image is missing. Let's work with a dedicated node and safe the time.
+We know that by default a kubernetes cluster will deploy a pod on a node which has enough ressources for this workload. Our docker image must be pulled on all nodes in our kubernetes cluster in order to be ready as quickly as possible. This process may take a long time. If the docker image isn't pulled on a node and a new pod will provisioned on this node, it will take more time to get ready and healthy.
+For our use case we will label a node in our kubernetes cluster so that always this node will be used.
 
-So, we label a worker node with _debug=true_:
+We label a node with _debug=true_:
 
 ```sh
 kubectl label nodes local-debug-k8s-worker debug=true
