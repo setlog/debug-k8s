@@ -1,10 +1,10 @@
 # Preface
 
-In a perfect world every written service will work smooth, your test coverage is on top and there are no bugs in your API. But we all know, that we can't achieve this world, sadly. It's not unusual that there's a bug in an API and you have to debug this problem in a production environment. We have faced this problem with our go services in our Kubernetes cluster, and we want to show you how it's possible to remote debug a go service in a Kubernetes cluster.
+In a perfect world every written service will work smooth, your test coverage is on top and there are no bugs in the implementation of your API. But we all know, that we can't achieve this world, sadly. It's not unusual that there's a bug and you have to debug this problem in a production environment. We have faced this problem with our go services in our Kubernetes cluster, and we want to show you how it's possible to remote debug a go service in a Kubernetes cluster.
 
 ## Software Prerequisites
 
-For this scenario we need some software:
+For this case we create a kubernetes cluster running locally on our system. Therefore we need the following software:
 
 * [Docker Desktop](https://docs.docker.com/get-docker) (used version: 19.03.8)
 * [kind (Kubernetes in Docker)](https://kind.sigs.k8s.io) (used version: v0.7.0)
@@ -90,7 +90,7 @@ Have a nice day! 👋
 Activate the kube-context for `kubectl` to communicate with the new cluster:
 
 ```sh
-`kubectl cluster-info --context kind-local-debug-k8s`
+kubectl cluster-info --context kind-local-debug-k8s
 ```
 
 #### Install nginx-ingress
@@ -236,7 +236,7 @@ Let's go through the deployment.
 
 If you did all steps correctly, your pod should be up and running. Check it with `kubectl get pod`. You should see the output with the pod status _Running_ and two additional services _debug-k8s_ and _service-debug_:
 
-```
+```sh
 NAME                            READY   STATUS    RESTARTS   AGE
 pod/debug-k8s-6d69b65cf-4fl6t   1/1     Running   0          1h
 
