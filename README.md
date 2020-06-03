@@ -95,7 +95,7 @@ kubectl cluster-info --context kind-local-debug-k8s
 
 #### Install nginx-ingress
 
-For both ports (8090 and 30123) to work, it is necessary to deploy an nginx controller:
+For both ports (8090 and 30123) to work, it is necessary to deploy an nginx controller as an ingress controller:
 
 ```sh
 kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
@@ -103,7 +103,7 @@ kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/mas
 
 Source: [kind documentation](https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx>)
 
-And wait until the nginx-controller runs:
+to observe the current status the following command can be executed:
 
 ```sh
 kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
