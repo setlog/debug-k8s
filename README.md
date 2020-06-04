@@ -265,7 +265,7 @@ _Hint: always wait until this log message is shown for this pod before you start
 
 ### Starting the debug process via launch.json
 
-Now we need a debug configuration in Visual Code. This can be done in `.vscode/launch.json`:
+Now we need a debug configuration in Visual Studio Code. This can be done in `.vscode/launch.json`:
 
 ```json
 {
@@ -287,15 +287,17 @@ Now we need a debug configuration in Visual Code. This can be done in `.vscode/l
 
 Where `remotePath` is the path to the project path inside the pod, `port` the local port to send the debug commands to, and `host` the host to send the debug commands to.
 
-You find the new configuration in Visual Code here:
+You can find the new configuration in Visual Studio Code here:
 
 ![Debug Configuration](images/debug-config.png "Where to find the debug config")
 
 After starting the debug process there is a new log created by the go service:
 
+```sh
     2020/05/28 15:38:53 I am going to start...
+```
 
-We are ready to debug, but we have to trigger the API functions through the ingress service. Deploy it with kubectl:
+Finally we are ready to debug the service, but we have to trigger the API functions through the ingress service. Deploy it with kubectl:
 
 ```sh
 kubectl create -f cluster/ingress.yaml
@@ -309,13 +311,13 @@ curl http://localhost:8090/hello
 
 Which should trigger the debugger:
 
-![Breakpoint](images/debug-screen.png "Breakpoint in Visual Code")
+![Breakpoint](images/debug-screen.png "Breakpoint in Visual Studio Code")
 
 Happy debugging!
 
 ### Cleaning up
 
-If you don't need your kind cluster anymore, it can be removed with following command:
+If you don't need your kind cluster anymore, you can remove this with the following command:
 
 ```sh
 kind delete cluster --name=local-debug-k8s
