@@ -167,9 +167,9 @@ A message appears indicating that the docker image did not exist before:
     Image: "setlog/debug-k8s:latest" with ID "sha256:944baa03d49698b9ca1f22e1ce87b801a20ce5aa52ccfc648a6c82cf8708a783" not present on node "local-debug-k8s-worker"
 ```
 
-### Starting the delve server in the cluster
+### Deploy the delve container in our cluster
 
-Now we want to create a persistent volume and its claim in order to mount the project path into the worker node:
+First of all we need a persistent volume and its claim in order to mount the project path into the node:
 
 ```sh
 kubectl create -f cluster/persistent-volume.yaml
@@ -177,12 +177,12 @@ kubectl create -f cluster/persistent-volume.yaml
 
 The interesting part here is:
 
-```
+```yaml
   hostPath:
     path: /go/src
 ```
 
-Let's take a look at the full chain of mounting the local project path into the pod, since you want probably to adjust them to your environment:
+Below is an image that shows the configurations through which our local path is mounted. In your environment it could be another path:
 
 ![Mounting](images/mounting.png "How to mount the project folder")
 
@@ -195,22 +195,23 @@ kubectl get pvc
     go-pvc   Bound    go-pv    256Mi      RWO            hostpath       51s
 ```
 
-You are ready to start the service in debug mode:
+Now we are ready to deploy all our services in debug mode:
 
 ```sh
 kubectl create -f cluster/deploy-service.yaml
 ```
 
-Let's go through the deployment.
+Let's go through the pod manifest:
 
-* Image name is what we loaded into the kind cluster with the command `kind load image...`. _imagePullPolicy_ must be set to _IfNotPresent_, because it is already loaded, we don't want Kubernetes to try loading it again.
+* _image_ is the previously built and loaded image into the kind cluster with `kind load image...`
+* _imagePullPolicy_ must be set to _IfNotPresent_ because it's already loaded and we don't want Kubernetes to try it again
 
 ```yaml
       image: setlog/debug-k8s:latest
       imagePullPolicy: IfNotPresent
 ```
 
-* We use the persistent volume claim to mount the project path into the pod and make `/go/src` to be linked with `${GOPATH}/src` on your computer:
+* We use the persistent volume claim to mount the project path into the pod, so that `/go/src` will be linked to `${GOPATH}/src` on your local system
 
 ```yaml
       containers:
@@ -223,16 +224,16 @@ Let's go through the deployment.
         - name: go-volume
           persistentVolumeClaim:
             claimName: go-pvc
-````
+```
 
-* As there might be several workers in your cluster, we deploy the pod on the one, that is labelled with _debug=true_. The docker image _setlog/debug-k8s_ has been loaded earlier in it already.
+* As there might be several nodes in your kubernetes cluster, we deploy the pod on the node, that is labelled with _debug=true_. The docker image _setlog/debug-k8s_ was already loaded on this node.
 
 ```yaml
       nodeSelector:
         debug: "true"
 ```
 
-* Service _service-debug_ has the type _NodePort_ and is mounted into the worker node. This port 30123 is equal to the parameter _--listen=:30123_ in the Dockerfile, which makes it possible to send debug commands to the delve server.
+* Service _service-debug_ has the type _NodePort_ and is mounted to the node. This port 30123 is equal to the parameter _--listen=:30123_ in the Dockerfile, which makes it possible to send debug commands to the delve server.
 
 * Service _debug-k8s_ will be connected to the ingress server in the final step. It serves for exposing the API endpoints we are going to debug.
 
@@ -255,7 +256,8 @@ Usually it takes a couple of seconds to start the debugging process with delve. 
 Also, you can output logs of the pod by performing `kubectl logs $PODNAME` in order to make sure the delve API server is listening at 30123.
 
 Output:
-```
+
+```sh
         API server listening at: [::]:30123
 ```
 
