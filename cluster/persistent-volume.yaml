@@ -1,0 +1,26 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: go-pv
+spec:
+  storageClassName: hostpath
+  capacity:
+    storage: 256Mi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: /go/src
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: go-pvc
+spec:
+  storageClassName: hostpath
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi

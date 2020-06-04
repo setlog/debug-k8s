@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: debug-k8s
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: debug-k8s
+          servicePort: 8090

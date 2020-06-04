@@ -1,0 +1,22 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration # necessary, since we are going to install an ingress network in the cluster
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+        authorization-mode: "AlwaysAllow"
+  extraPortMappings:
+  - containerPort: 80 # http endpoint of ingress runs on the port 80
+    hostPort: 8090 # port on your host machine to call API's of the service
+    protocol: TCP
+  - containerPort: 30123 # node port for the delve server
+    hostPort: 30123 # port on your host machine to communicate with the delve server
+    protocol: TCP
+- role: worker
+  extraMounts:
+    - hostPath: {GOPATH}/src # ATTENTION: you might want to change this path to your ${GOPATH}/src
+      containerPath: /go/src # path to the project folder inside the worker node

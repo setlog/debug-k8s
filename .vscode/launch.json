@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Remote debug in Kubernetes",
+            "type": "go",
+            "request": "attach",
+            "mode":"remote",
+            "remotePath": "/go/src/github.com/setlog/debug-k8s",
+            "port": 30123,
+            "host": "127.0.0.1",
+            "showLog": true
+        }
+    ]
+}
